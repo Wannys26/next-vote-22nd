@@ -1,7 +1,1 @@
-export const teamOptions = [
-  "Modelly",
-  "Storix",
-  "Catch up",
-  "DiggIndie",
-  "GroomEasy",
-];
+export const teamOptions = ['MODELLY', 'STORIX', 'CATCHUP', 'DIGGINDIE', 'MENUAL'];

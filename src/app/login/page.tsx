@@ -4,8 +4,11 @@ import Link from 'next/link';
 import { useState, FormEvent } from 'react';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { loginSchema } from '@/schemas/loginSchema';
+import { useGuestGuard } from '@/hooks/useAuthGuard';
 
 const LoginPage = () => {
+  useGuestGuard();
+
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ loginId?: string; password?: string }>({});

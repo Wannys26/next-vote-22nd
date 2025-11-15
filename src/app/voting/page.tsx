@@ -1,4 +1,8 @@
+import { useLoginGuard } from '@/hooks/useAuthGuard';
+
 const VotingPage = () => {
+  useLoginGuard();
+
   return (
     <main className="min-h-screen flex items-center justify-center px-4 pt-20">
       <div className="text-center">
