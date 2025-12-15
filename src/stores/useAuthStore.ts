@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface UserInfo {
   userId: number;
@@ -19,30 +20,40 @@ interface AuthStore {
   setAuthChecked: () => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
-  accessToken: '',
-  isLoggedIn: false,
-  isAuthChecked: false,
-  userInfo: null,
-
-  setAccessToken: (token) =>
-    set({
-      accessToken: token,
-      isLoggedIn: true,
-    }),
-
-  setUserInfo: (userInfo) =>
-    set({
-      userInfo,
-    }),
-
-  clearAuth: () =>
-    set({
+export const useAuthStore = create<AuthStore>()(
+  persist(
+    (set) => ({
       accessToken: '',
       isLoggedIn: false,
-      isAuthChecked: true,
+      isAuthChecked: false,
       userInfo: null,
-    }),
 
-  setAuthChecked: () => set({ isAuthChecked: true }),
-}));
+      setAccessToken: (token) =>
+        set({
+          accessToken: token,
+          isLoggedIn: true,
+        }),
+
+      setUserInfo: (userInfo) =>
+        set({
+          userInfo,
+        }),
+
+      clearAuth: () =>
+        set({
+          accessToken: '',
+          isLoggedIn: false,
+          isAuthChecked: true,
+          userInfo: null,
+        }),
+
+      setAuthChecked: () => set({ isAuthChecked: true }),
+    }),
+    {
+      name: 'auth-storage',
+      partialize: (state) => ({
+        userInfo: state.userInfo, // userInfo만 localStorage에 저장
+      }),
+    },
+  ),
+);
