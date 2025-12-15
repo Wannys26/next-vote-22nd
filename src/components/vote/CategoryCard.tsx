@@ -8,7 +8,7 @@ interface CategoryCardProps {
 
 export default function CategoryCard({ category }: CategoryCardProps) {
   return (
-    <Link href={`/vote/${category.id}`}>
+    <Link href={`/voting/${category.id}`}>
       <div className="bg-white border border-gray-400 rounded-[16px] p-8 hover:shadow-lg transition-all cursor-pointer h-full flex flex-col">
         {/* 아이콘 */}
         <div
