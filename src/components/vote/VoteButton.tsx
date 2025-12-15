@@ -9,12 +9,11 @@ export default function VoteButton({ name, isSelected, onClick }: VoteButtonProp
     <button
       onClick={onClick}
       className={`
-        w-full h-14 rounded-[14px] border transition-all
-        text-body-1-semibold text-black
+        w-full h-14 rounded-[14px] border transition-all cursor-pointer
         ${
           isSelected
-            ? 'bg-gray-200 border-blue-600 border-2'
-            : 'bg-gray-200 border-gray-400 border hover:border-gray-500'
+            ? 'bg-blue-600 text-body-1-semibold text-white border-blue-600'
+            : 'text-body-1-semibold text-black bg-gray-200 border-gray-400 border hover:border-gray-500'
         }
       `}
     >

@@ -1,3 +1,5 @@
+'use client';
+
 import { useLoginGuard } from '@/hooks/useAuthGuard';
 
 const MembersPage = () => {
