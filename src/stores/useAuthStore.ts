@@ -13,6 +13,7 @@ interface AuthStore {
   isLoggedIn: boolean;
   isAuthChecked: boolean;
   userInfo: UserInfo | null;
+  hasHydrated: boolean;
 
   setAccessToken: (token: string) => void;
   setUserInfo: (userInfo: UserInfo) => void;
@@ -27,6 +28,7 @@ export const useAuthStore = create<AuthStore>()(
       isLoggedIn: false,
       isAuthChecked: false,
       userInfo: null,
+      hasHydrated: false,
 
       setAccessToken: (token) =>
         set({
@@ -54,6 +56,12 @@ export const useAuthStore = create<AuthStore>()(
       partialize: (state) => ({
         userInfo: state.userInfo, // userInfo만 localStorage에 저장
       }),
+      onRehydrateStorage: () => (state) => {
+        // Hydration 완료 시 플래그 설정
+        if (state) {
+          state.hasHydrated = true;
+        }
+      },
     },
   ),
 );

@@ -8,6 +8,18 @@ import CategoryCard from '@/components/vote/CategoryCard';
 export default function VoteCategoryPage() {
   useLoginGuard();
   const userInfo = useAuthStore((state) => state.userInfo);
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
+
+  // Hydration 완료 전에는 로딩 표시
+  if (!hasHydrated) {
+    return (
+      <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">
+        <div className="text-center">
+          <p className="text-body-1-semibold text-gray-700">로딩 중...</p>
+        </div>
+      </main>
+    );
+  }
 
   // 사용자 part에 따라 선택 가능한 카테고리 필터링
   const availableCategories = userInfo?.part
