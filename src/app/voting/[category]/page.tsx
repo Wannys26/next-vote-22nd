@@ -17,7 +17,7 @@ export default function VotingPage() {
 
   usePartGuard(category);
 
-  const { setCurrentSelection, currentSelection, submitVote } = useVoteStore();
+  const { setCurrentSelection, submitVote } = useVoteStore();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // 카테고리 정보 가져오기
