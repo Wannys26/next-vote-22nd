@@ -26,7 +26,7 @@ const MembersPage = () => {
           <button
             onClick={() => setSelectedPart('FRONTEND')}
             className={`
-              w-full md:w-[216px] md:h-[50px] px-8 py-3 rounded-[14px] text-body-1-semibold transition-all cursor-pointer
+              w-full h-[50px] md:w-[216px] md:h-[50px] px-8 py-3 rounded-[14px] text-body-1-semibold transition-all cursor-pointer
               ${
                 selectedPart === 'FRONTEND'
                   ? 'bg-blue-600 text-white shadow-md'
@@ -39,7 +39,7 @@ const MembersPage = () => {
           <button
             onClick={() => setSelectedPart('BACKEND')}
             className={`
-              w-full md:w-[216px] md:h-[50px] px-8 py-3 rounded-[14px] text-body-1-semibold transition-all cursor-pointer
+              w-full h-[50px] md:w-[216px] md:h-[50px] px-8 py-3 rounded-[14px] text-body-1-semibold transition-all cursor-pointer
               ${
                 selectedPart === 'BACKEND'
                   ? 'bg-blue-600 text-white shadow-md'
