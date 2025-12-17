@@ -54,7 +54,7 @@ const MembersPage = () => {
         {/* 멤버 카드 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {members.map((member, index) => (
-            <MemberCard key={member.id} member={member} index={index} />
+            <MemberCard key={member.id} member={member} index={index} part={selectedPart} />
           ))}
         </div>
       </div>

@@ -7,6 +7,5 @@ export interface Member {
   id: string;
   name: string;
   team: TeamName;
-  part: MemberPart;
   university: string;
 }

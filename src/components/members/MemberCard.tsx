@@ -5,6 +5,7 @@ import UniIcon from '@/svgs/common/uni.svg';
 interface MemberCardProps {
   member: Member;
   index: number;
+  part: 'FRONTEND' | 'BACKEND';
 }
 
 const PROFILE_COLOR_CLASSES = [
@@ -18,7 +19,7 @@ const PROFILE_COLOR_CLASSES = [
   'bg-gray-800',
 ];
 
-export default function MemberCard({ member, index }: MemberCardProps) {
+export default function MemberCard({ member, index, part }: MemberCardProps) {
   const profileColorClass = PROFILE_COLOR_CLASSES[index % PROFILE_COLOR_CLASSES.length];
 
   return (
@@ -38,7 +39,7 @@ export default function MemberCard({ member, index }: MemberCardProps) {
       <div className="flex flex-col gap-2 mt-auto">
         <div className="flex items-center gap-2 text-body-3-regular text-gray-800">
           <RoleIcon className="w-4 h-4" />
-          <span>{member.part === 'FRONTEND' ? 'Frontend Developer' : 'Backend Developer'}</span>
+          <span>{part === 'FRONTEND' ? 'Frontend Developer' : 'Backend Developer'}</span>
         </div>
         <div className="flex items-center gap-2 text-body-3-regular text-gray-800">
           <UniIcon className="w-4 h-4" />
