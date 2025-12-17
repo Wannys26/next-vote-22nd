@@ -22,7 +22,7 @@ export default function MemberCard({ member, index }: MemberCardProps) {
   const profileColorClass = PROFILE_COLOR_CLASSES[index % PROFILE_COLOR_CLASSES.length];
 
   return (
-    <div className="bg-white border border-gray-400 rounded-2xl p-6 hover:shadow-lg transition-all h-full flex flex-col">
+  <div className="bg-white border border-gray-400 rounded-2xl p-6 transition-all h-full flex flex-col">
       {/* 프로필 아이콘 */}
       <div className="flex justify-center mb-4">
         <div className={`w-16 h-16 rounded-full flex items-center justify-center ${profileColorClass}`}>
