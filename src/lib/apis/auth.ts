@@ -7,10 +7,11 @@ export const login = async (payload: LoginRequest): Promise<LoginResponse> => {
   const response = await axiosInstance.post<LoginResponse>('/api/auth/login', payload);
 
   // accessToken은 response body에 포함되어 있음
-  const { accessToken } = response.data.result;
+  const { accessToken, userId, name, part, team } = response.data.result;
 
   if (accessToken) {
     useAuthStore.getState().setAccessToken(accessToken);
+    useAuthStore.getState().setUserInfo({ userId, name, part, team });
     localStorage.removeItem('skipAutoLogin');
   }
 
