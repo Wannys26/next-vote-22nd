@@ -22,6 +22,7 @@ export const useFetchLeaderCandidatesQuery = (options?: object) =>
 export const useVoteLeaderMutation = () => {
   const qc = useQueryClient();
   return useMutation({
+    mutationKey: ['votes', 'leader', 'vote'] as const,
     mutationFn: voteLeader,
     onSuccess: () => {
         qc.invalidateQueries({ queryKey: ['votes', 'leader', 'candidates'] as const });
@@ -50,6 +51,7 @@ export const useFetchDemodayCandidatesQuery = (options?: object) =>
 export const useVoteDemodayMutation = () => {
   const qc = useQueryClient();
   return useMutation({
+    mutationKey: ['votes', 'demoday', 'vote'] as const,
     mutationFn: voteDemoday,
     onSuccess: () => {
         qc.invalidateQueries({ queryKey: ['votes', 'demoday', 'candidates'] as const });

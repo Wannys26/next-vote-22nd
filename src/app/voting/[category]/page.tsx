@@ -14,6 +14,7 @@ import {
   useVoteLeaderMutation,
   useVoteDemodayMutation,
 } from '@/hooks/vote/useVote';
+import { useIsMutating } from '@tanstack/react-query';
 
 export default function VotingPage() {
   useLoginGuard();
@@ -34,6 +35,9 @@ export default function VotingPage() {
 
   const leaderMutation = useVoteLeaderMutation();
   const demodayMutation = useVoteDemodayMutation();
+  const leaderMutating = useIsMutating({ mutationKey: ['votes', 'leader', 'vote'] }) > 0;
+  const demodayMutating = useIsMutating({ mutationKey: ['votes', 'demoday', 'vote'] }) > 0;
+  const isMutating = leaderMutating || demodayMutating;
 
   type LegacyCandidate = { id: string; name: string };
   type CandidateItem = VoteCandidate | LegacyCandidate;
@@ -144,16 +148,21 @@ export default function VotingPage() {
           </div>
 
           {/* 투표하기 버튼 */}
-          <button
-            onClick={handleSubmitVote}
-            disabled={!selectedId}
-            className={`
-              w-full h-14 rounded-xl text-body-1-semibold text-white transition-all
-              ${selectedId ? 'bg-blue-600 hover:bg-blue-500 cursor-pointer' : 'bg-gray-500 cursor-not-allowed'}
-            `}
-          >
-            투표하기
-          </button>
+          {(() => {
+            const disabled = !selectedId || isMutating;
+            return (
+              <button
+                onClick={handleSubmitVote}
+                disabled={disabled}
+                className={`
+                  w-full h-14 rounded-xl text-body-1-semibold text-white transition-all
+                  ${disabled ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500 cursor-pointer'}
+                `}
+              >
+                투표하기
+              </button>
+            );
+          })()}
         </div>
       </div>
     </main>
