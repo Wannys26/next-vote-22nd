@@ -74,10 +74,24 @@ export default function VotingPage() {
       router.push(`/voting/${category}/result`);
     };
 
+    const onError = (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string }; status?: number }; message?: string };
+      const serverMsg = err?.response?.data?.message || err?.message;
+      const status = err?.response?.status;
+
+      if (status === 409) {
+        window.alert('이미 투표를 완료했습니다. 중복 투표는 불가능합니다.');
+      } else if (serverMsg) {
+        window.alert(String(serverMsg));
+      } else {
+        window.alert('투표 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      }
+    };
+
     if (isLeader) {
-      leaderMutation.mutate(payload, { onSuccess });
+      leaderMutation.mutate(payload, { onSuccess, onError });
     } else {
-      demodayMutation.mutate(payload, { onSuccess });
+      demodayMutation.mutate(payload, { onSuccess, onError });
     }
   };
 
