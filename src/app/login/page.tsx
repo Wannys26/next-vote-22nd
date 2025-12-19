@@ -85,7 +85,7 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full py-3 bg-blue-600 text-white text-body-1-semibold rounded-[14px] hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+            className="w-full py-3 bg-blue-600 text-white text-body-1-semibold rounded-[14px] hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity cursor-pointer"
           >
             {isPending ? '로그인 중...' : '로그인하기'}
           </button>
