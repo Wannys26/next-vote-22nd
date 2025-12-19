@@ -3,6 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import { useLoginGuard } from '@/hooks/useAuthGuard';
+import { usePartGuard } from '@/hooks/usePartGuard';
 import { categoryData, type VoteCategory } from '@/constants/voteData';
 import ResultBar from '@/components/vote/ResultBar';
 import {
@@ -16,6 +17,8 @@ export default function VotingResultPage() {
   const router = useRouter();
   const category = params.category as VoteCategory;
 
+  usePartGuard(category);
+
   const categoryInfo = categoryData[category];
 
   const isLeader = category === 'fe-leader' || category === 'be-leader';
@@ -23,10 +26,8 @@ export default function VotingResultPage() {
   const demodayResultQuery = useFetchDemodayResultQuery({ enabled: category === 'demo-day' });
 
   const apiResult = isLeader ? leaderResultQuery.data?.result : demodayResultQuery.data?.result;
-  const isLoading = isLeader ? leaderResultQuery.isLoading : demodayResultQuery.isLoading;
   const isError = isLeader ? !!leaderResultQuery.error : !!demodayResultQuery.error;
 
-  // map API result to UI shape
   const voteResult = useMemo(() => {
     if (!apiResult) return null;
 
@@ -41,6 +42,7 @@ export default function VotingResultPage() {
     };
   }, [apiResult]);
 
+  // 유효하지 않은 카테고리인 경우
   if (!categoryInfo) {
     return (
       <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">
@@ -57,15 +59,7 @@ export default function VotingResultPage() {
     );
   }
 
-  // loading / error states
-  if (isLoading) {
-    return (
-      <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">
-        <div className="text-center">로딩 중...</div>
-      </main>
-    );
-  }
-
+  // 데이터 로딩 실패 또는 결과가 없는 경우
   if (isError || !voteResult) {
     return (
       <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">
@@ -94,7 +88,7 @@ export default function VotingResultPage() {
         </div>
 
         {/* 결과 컨테이너 */}
-  <div className="bg-white border border-gray-400 rounded-2xl shadow-lg p-8 flex flex-col gap-6">
+        <div className="bg-white border border-gray-400 rounded-2xl shadow-lg p-8 flex flex-col gap-6">
           {/* 카테고리 제목 */}
           <div className="border-b border-gray-400 pb-4">
             <h2 className="text-head-4-bold text-black text-center">{categoryInfo.title}</h2>

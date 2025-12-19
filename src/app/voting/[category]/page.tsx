@@ -3,6 +3,7 @@
 import { useRouter, useParams } from 'next/navigation';
 import { useState } from 'react';
 import { useLoginGuard } from '@/hooks/useAuthGuard';
+import { usePartGuard } from '@/hooks/usePartGuard';
 import { useVoteStore } from '@/stores/useVoteStore';
 import { categoryData, type VoteCategory } from '@/constants/voteData';
 import type { VoteCandidate } from '@/types/vote/dto';
@@ -22,13 +23,15 @@ export default function VotingPage() {
   const params = useParams();
   const category = params.category as VoteCategory;
 
+  usePartGuard(category);
+
   const { setCurrentSelection, submitVote } = useVoteStore();
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   // 카테고리 정보 가져오기
   const categoryInfo = categoryData[category];
 
-  // 데이터 fetching
+  // 데이터 쿼리 및 뮤테이션 훅 설정
   const isLeader = category === 'fe-leader' || category === 'be-leader';
   const leaderQuery = useFetchLeaderCandidatesQuery({ enabled: isLeader });
   const demodayQuery = useFetchDemodayCandidatesQuery({ enabled: category === 'demo-day' });
