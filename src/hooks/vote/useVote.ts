@@ -24,8 +24,8 @@ export const useVoteLeaderMutation = () => {
   return useMutation({
     mutationFn: voteLeader,
     onSuccess: () => {
-  qc.invalidateQueries({ queryKey: ['votes', 'leader', 'candidates'] as const });
-  qc.invalidateQueries({ queryKey: ['votes', 'leader', 'result'] as const });
+        qc.invalidateQueries({ queryKey: ['votes', 'leader', 'candidates'] as const });
+        qc.invalidateQueries({ queryKey: ['votes', 'leader', 'result'] as const });
     },
   });
 };
@@ -52,8 +52,8 @@ export const useVoteDemodayMutation = () => {
   return useMutation({
     mutationFn: voteDemoday,
     onSuccess: () => {
-  qc.invalidateQueries({ queryKey: ['votes', 'demoday', 'candidates'] as const });
-  qc.invalidateQueries({ queryKey: ['votes', 'demoday', 'result'] as const });
+        qc.invalidateQueries({ queryKey: ['votes', 'demoday', 'candidates'] as const });
+        qc.invalidateQueries({ queryKey: ['votes', 'demoday', 'result'] as const });
     },
   });
 };

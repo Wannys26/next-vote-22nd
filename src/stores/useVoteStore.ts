@@ -3,7 +3,7 @@ import type { VoteCategory } from '@/constants/voteData';
 
 interface VoteSelection {
   category: VoteCategory;
-  selectedId: string;
+  selectedId: number;
   selectedName: string;
 }
 
@@ -11,20 +11,20 @@ interface VoteStore {
   // 현재 선택한 항목 (투표 페이지에서 사용)
   currentSelection: {
     category: VoteCategory | null;
-    selectedId: string | null;
+    selectedId: number | null;
   };
 
   // 투표 완료 목록 (카테고리별로 투표한 내역 저장)
   votedCategories: Record<VoteCategory, VoteSelection | null>;
 
   // 현재 선택 항목 설정
-  setCurrentSelection: (category: VoteCategory, selectedId: string) => void;
+  setCurrentSelection: (category: VoteCategory, selectedId: number) => void;
 
   // 현재 선택 항목 초기화
   clearCurrentSelection: () => void;
 
   // 투표 제출 (투표 완료 목록에 추가)
-  submitVote: (category: VoteCategory, selectedId: string, selectedName: string) => void;
+  submitVote: (category: VoteCategory, selectedId: number, selectedName: string) => void;
 
   // 특정 카테고리에 이미 투표했는지 확인
   hasVoted: (category: VoteCategory) => boolean;

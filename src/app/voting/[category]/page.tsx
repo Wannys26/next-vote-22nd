@@ -39,7 +39,6 @@ export default function VotingPage() {
   type CandidateItem = VoteCandidate | LegacyCandidate;
 
   const candidates: CandidateItem[] = isLeader ? (leaderQuery.data?.result ?? []) : (demodayQuery.data?.result ?? []);
-  // we intentionally don't show a loading indicator here
   const isError = isLeader ? !!leaderQuery.error : !!demodayQuery.error;
 
   // 유효하지 않은 카테고리인 경우
@@ -54,10 +53,10 @@ export default function VotingPage() {
     );
   }
 
-  // 후보자/프로젝트 선택 핸들러 (API는 numeric id 사용)
+  // 후보자/프로젝트 선택 핸들러
   const handleSelect = (id: number) => {
     setSelectedId(id);
-    setCurrentSelection(category, String(id));
+    setCurrentSelection(category, id);
   };
 
   // 투표하기 버튼 핸들러
@@ -71,7 +70,7 @@ export default function VotingPage() {
 
     const onSuccess = () => {
       const selectedName = 'candidateName' in selectedCandidate ? selectedCandidate.candidateName : 'name' in selectedCandidate ? selectedCandidate.name : '';
-      submitVote(category, String(selectedId), selectedName);
+      submitVote(category, selectedId, selectedName);
       router.push(`/voting/${category}/result`);
     };
 
