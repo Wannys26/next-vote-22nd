@@ -4,9 +4,16 @@ import { useRouter, useParams } from 'next/navigation';
 import { useState } from 'react';
 import { useLoginGuard } from '@/hooks/useAuthGuard';
 import { useVoteStore } from '@/stores/useVoteStore';
-import { getCandidates, categoryData, type VoteCategory } from '@/constants/voteData';
+import { categoryData, type VoteCategory } from '@/constants/voteData';
+import type { VoteCandidate } from '@/types/vote/dto';
 import VoteButton from '@/components/vote/VoteButton';
 import BackButton from '@/components/vote/BackButton';
+import {
+  useFetchLeaderCandidatesQuery,
+  useFetchDemodayCandidatesQuery,
+  useVoteLeaderMutation,
+  useVoteDemodayMutation,
+} from '@/hooks/vote/useVote';
 
 export default function VotingPage() {
   useLoginGuard();
@@ -14,12 +21,26 @@ export default function VotingPage() {
   const params = useParams();
   const category = params.category as VoteCategory;
 
-  const { setCurrentSelection, currentSelection, submitVote } = useVoteStore();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { setCurrentSelection, submitVote } = useVoteStore();
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   // 카테고리 정보 가져오기
   const categoryInfo = categoryData[category];
-  const candidates = getCandidates(category);
+
+  // 데이터 fetching
+  const isLeader = category === 'fe-leader' || category === 'be-leader';
+  const leaderQuery = useFetchLeaderCandidatesQuery({ enabled: isLeader });
+  const demodayQuery = useFetchDemodayCandidatesQuery({ enabled: category === 'demo-day' });
+
+  const leaderMutation = useVoteLeaderMutation();
+  const demodayMutation = useVoteDemodayMutation();
+
+  type LegacyCandidate = { id: string; name: string };
+  type CandidateItem = VoteCandidate | LegacyCandidate;
+
+  const candidates: CandidateItem[] = isLeader ? (leaderQuery.data?.result ?? []) : (demodayQuery.data?.result ?? []);
+  // we intentionally don't show a loading indicator here
+  const isError = isLeader ? !!leaderQuery.error : !!demodayQuery.error;
 
   // 유효하지 않은 카테고리인 경우
   if (!categoryInfo || !candidates) {
@@ -33,27 +54,38 @@ export default function VotingPage() {
     );
   }
 
-  // 후보자/프로젝트 선택 핸들러
-  const handleSelect = (id: string) => {
+  // 후보자/프로젝트 선택 핸들러 (API는 numeric id 사용)
+  const handleSelect = (id: number) => {
     setSelectedId(id);
-    setCurrentSelection(category, id);
+    setCurrentSelection(category, String(id));
   };
 
   // 투표하기 버튼 핸들러
   const handleSubmitVote = () => {
     if (!selectedId) return;
 
-    const selectedCandidate = candidates.find((c) => c.id === selectedId);
+    const selectedCandidate = candidates.find((c: CandidateItem) => ('candidateId' in c ? c.candidateId === selectedId : Number(c.id) === selectedId));
     if (!selectedCandidate) return;
 
-    submitVote(category, selectedId, selectedCandidate.name);
-    router.push(`/voting/${category}/result`);
+    const payload = { candidateId: selectedId };
+
+    const onSuccess = () => {
+      const selectedName = 'candidateName' in selectedCandidate ? selectedCandidate.candidateName : 'name' in selectedCandidate ? selectedCandidate.name : '';
+      submitVote(category, String(selectedId), selectedName);
+      router.push(`/voting/${category}/result`);
+    };
+
+    if (isLeader) {
+      leaderMutation.mutate(payload, { onSuccess });
+    } else {
+      demodayMutation.mutate(payload, { onSuccess });
+    }
   };
 
   return (
     <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">
       <div className="w-full max-w-4xl py-12">
-        <div className="bg-white border border-gray-400 rounded-[16px] shadow-lg p-8">
+      <div className="bg-white border border-gray-400 rounded-2xl shadow-lg p-8">
           {/* 뒤로가기 버튼 */}
           <div className="mb-6">
             <BackButton href="/voting" />
@@ -75,17 +107,27 @@ export default function VotingPage() {
               {category === 'demo-day' ? '프로젝트 선택' : '멤버 선택'}
             </h3>
 
-            {/* 후보자/프로젝트 버튼 그리드 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {candidates.map((candidate) => (
-                <VoteButton
-                  key={candidate.id}
-                  name={candidate.name}
-                  isSelected={selectedId === candidate.id}
-                  onClick={() => handleSelect(candidate.id)}
-                />
-              ))}
-            </div>
+              {/* 후보자/프로젝트 버튼 그리드 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {isError ? (
+                  <div>데이터를 불러오지 못했습니다.</div>
+                ) : (
+                  candidates.length > 0 &&
+                  candidates.map((candidate: CandidateItem) => {
+                    const key = 'candidateId' in candidate ? candidate.candidateId : candidate.id;
+                    const name = 'candidateName' in candidate ? candidate.candidateName : candidate.name;
+                    const idNumber = 'candidateId' in candidate ? candidate.candidateId : Number(candidate.id);
+                    return (
+                      <VoteButton
+                        key={key}
+                        name={name}
+                        isSelected={selectedId === idNumber}
+                        onClick={() => handleSelect(idNumber)}
+                      />
+                    );
+                  })
+                )}
+              </div>
           </div>
 
           {/* 투표하기 버튼 */}
@@ -93,7 +135,7 @@ export default function VotingPage() {
             onClick={handleSubmitVote}
             disabled={!selectedId}
             className={`
-              w-full h-14 rounded-[14px] text-body-1-semibold text-white transition-all
+              w-full h-14 rounded-xl text-body-1-semibold text-white transition-all
               ${selectedId ? 'bg-blue-600 hover:bg-blue-500 cursor-pointer' : 'bg-gray-500 cursor-not-allowed'}
             `}
           >

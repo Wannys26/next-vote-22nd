@@ -1,9 +1,14 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 import { useLoginGuard } from '@/hooks/useAuthGuard';
-import { getVoteResult, categoryData, type VoteCategory } from '@/constants/voteData';
+import { categoryData, type VoteCategory } from '@/constants/voteData';
 import ResultBar from '@/components/vote/ResultBar';
+import {
+  useFetchLeaderResultQuery,
+  useFetchDemodayResultQuery,
+} from '@/hooks/vote/useVote';
 
 export default function VotingResultPage() {
   useLoginGuard();
@@ -11,16 +16,61 @@ export default function VotingResultPage() {
   const router = useRouter();
   const category = params.category as VoteCategory;
 
-  // 카테고리 정보와 결과 데이터 가져오기
   const categoryInfo = categoryData[category];
-  const voteResult = getVoteResult(category);
 
-  // 유효하지 않은 카테고리인 경우
-  if (!categoryInfo || !voteResult) {
+  const isLeader = category === 'fe-leader' || category === 'be-leader';
+  const leaderResultQuery = useFetchLeaderResultQuery({ enabled: isLeader });
+  const demodayResultQuery = useFetchDemodayResultQuery({ enabled: category === 'demo-day' });
+
+  const apiResult = isLeader ? leaderResultQuery.data?.result : demodayResultQuery.data?.result;
+  const isLoading = isLeader ? leaderResultQuery.isLoading : demodayResultQuery.isLoading;
+  const isError = isLeader ? !!leaderResultQuery.error : !!demodayResultQuery.error;
+
+  // map API result to UI shape
+  const voteResult = useMemo(() => {
+    if (!apiResult) return null;
+
+    const list = (apiResult.candidateList ?? [])
+      .slice()
+      .sort((a, b) => b.voteCount - a.voteCount)
+      .map((item, idx) => ({ rank: idx + 1, name: item.candidateName, votes: item.voteCount, emoji: idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '' }));
+
+    return {
+      results: list,
+      totalVotes: apiResult.totalVoteCount ?? list.reduce((s, r) => s + r.votes, 0),
+    };
+  }, [apiResult]);
+
+  if (!categoryInfo) {
     return (
       <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">
         <div className="text-center">
           <h1 className="text-head-2-bold text-black mb-4">잘못된 접근입니다</h1>
+          <button
+            onClick={() => router.push('/voting')}
+            className="bg-blue-600 text-white px-6 py-3 rounded-[14px] text-body-1-semibold hover:bg-blue-500"
+          >
+            카테고리 선택으로 돌아가기
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  // loading / error states
+  if (isLoading) {
+    return (
+      <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">
+        <div className="text-center">로딩 중...</div>
+      </main>
+    );
+  }
+
+  if (isError || !voteResult) {
+    return (
+      <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">
+        <div className="text-center">
+          <h1 className="text-head-2-bold text-black mb-4">데이터를 불러오지 못했습니다.</h1>
           <button
             onClick={() => router.push('/voting')}
             className="bg-blue-600 text-white px-6 py-3 rounded-[14px] text-body-1-semibold hover:bg-blue-500"
@@ -44,7 +94,7 @@ export default function VotingResultPage() {
         </div>
 
         {/* 결과 컨테이너 */}
-        <div className="bg-white border border-gray-400 rounded-[16px] shadow-lg p-8 flex flex-col gap-6">
+  <div className="bg-white border border-gray-400 rounded-2xl shadow-lg p-8 flex flex-col gap-6">
           {/* 카테고리 제목 */}
           <div className="border-b border-gray-400 pb-4">
             <h2 className="text-head-4-bold text-black text-center">{categoryInfo.title}</h2>
