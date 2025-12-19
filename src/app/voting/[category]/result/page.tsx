@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useLoginGuard } from '@/hooks/useAuthGuard';
-import { usePartGuard } from '@/hooks/usePartGuard';
 import { getVoteResult, categoryData, type VoteCategory } from '@/constants/voteData';
 import ResultBar from '@/components/vote/ResultBar';
 
@@ -11,8 +10,6 @@ export default function VotingResultPage() {
   const params = useParams();
   const router = useRouter();
   const category = params.category as VoteCategory;
-
-  usePartGuard(category);
 
   // 카테고리 정보와 결과 데이터 가져오기
   const categoryInfo = categoryData[category];

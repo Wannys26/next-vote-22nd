@@ -3,7 +3,6 @@
 import { useRouter, useParams } from 'next/navigation';
 import { useState } from 'react';
 import { useLoginGuard } from '@/hooks/useAuthGuard';
-import { usePartGuard } from '@/hooks/usePartGuard';
 import { useVoteStore } from '@/stores/useVoteStore';
 import { getCandidates, categoryData, type VoteCategory } from '@/constants/voteData';
 import VoteButton from '@/components/vote/VoteButton';
@@ -15,9 +14,7 @@ export default function VotingPage() {
   const params = useParams();
   const category = params.category as VoteCategory;
 
-  usePartGuard(category);
-
-  const { setCurrentSelection, submitVote } = useVoteStore();
+  const { setCurrentSelection, currentSelection, submitVote } = useVoteStore();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // 카테고리 정보 가져오기
