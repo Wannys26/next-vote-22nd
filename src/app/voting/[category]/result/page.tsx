@@ -6,10 +6,7 @@ import { useLoginGuard } from '@/hooks/useAuthGuard';
 import { usePartGuard } from '@/hooks/usePartGuard';
 import { categoryData, type VoteCategory } from '@/constants/voteData';
 import ResultBar from '@/components/vote/ResultBar';
-import {
-  useFetchLeaderResultQuery,
-  useFetchDemodayResultQuery,
-} from '@/hooks/vote/useVote';
+import { useFetchLeaderResultQuery, useFetchDemodayResultQuery } from '@/hooks/vote/useVote';
 
 export default function VotingResultPage() {
   useLoginGuard();
@@ -26,6 +23,7 @@ export default function VotingResultPage() {
   const demodayResultQuery = useFetchDemodayResultQuery({ enabled: category === 'demo-day' });
 
   const apiResult = isLeader ? leaderResultQuery.data?.result : demodayResultQuery.data?.result;
+  const isPending = isLeader ? leaderResultQuery.isPending : demodayResultQuery.isPending;
   const isError = isLeader ? !!leaderResultQuery.error : !!demodayResultQuery.error;
 
   const voteResult = useMemo(() => {
@@ -34,7 +32,12 @@ export default function VotingResultPage() {
     const list = (apiResult.candidateList ?? [])
       .slice()
       .sort((a, b) => b.voteCount - a.voteCount)
-      .map((item, idx) => ({ rank: idx + 1, name: item.candidateName, votes: item.voteCount, emoji: idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '' }));
+      .map((item, idx) => ({
+        rank: idx + 1,
+        name: item.candidateName,
+        votes: item.voteCount,
+        emoji: idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '',
+      }));
 
     return {
       results: list,
@@ -50,10 +53,21 @@ export default function VotingResultPage() {
           <h1 className="text-head-2-bold text-black mb-4">잘못된 접근입니다</h1>
           <button
             onClick={() => router.push('/voting')}
-            className="bg-blue-600 text-white px-6 py-3 rounded-[14px] text-body-1-semibold hover:bg-blue-500"
+            className="cursor-pointer bg-blue-600 text-white px-6 py-3 rounded-[14px] text-body-1-semibold hover:bg-blue-500"
           >
             카테고리 선택으로 돌아가기
           </button>
+        </div>
+      </main>
+    );
+  }
+
+  // 로딩 중
+  if (isPending) {
+    return (
+      <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">
+        <div className="text-center">
+          <h1 className="text-head-2-bold text-black mb-4">투표 결과를 불러오는 중...</h1>
         </div>
       </main>
     );
@@ -76,7 +90,7 @@ export default function VotingResultPage() {
     );
   }
 
-  const maxVotes = Math.max(...voteResult.results.map((r) => r.votes));
+  const maxVotes = voteResult.results.length ? Math.max(...voteResult.results.map((r) => r.votes)) : 0;
 
   return (
     <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">

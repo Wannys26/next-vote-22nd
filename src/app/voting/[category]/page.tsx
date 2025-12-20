@@ -15,7 +15,6 @@ import {
   useVoteLeaderMutation,
   useVoteDemodayMutation,
 } from '@/hooks/vote/useVote';
-import { useIsMutating } from '@tanstack/react-query';
 
 export default function VotingPage() {
   useLoginGuard();
@@ -38,14 +37,12 @@ export default function VotingPage() {
 
   const leaderMutation = useVoteLeaderMutation();
   const demodayMutation = useVoteDemodayMutation();
-  const leaderMutating = useIsMutating({ mutationKey: ['votes', 'leader', 'vote'] }) > 0;
-  const demodayMutating = useIsMutating({ mutationKey: ['votes', 'demoday', 'vote'] }) > 0;
-  const isMutating = leaderMutating || demodayMutating;
+  const isMutating = leaderMutation.isPending || demodayMutation.isPending;
 
   type LegacyCandidate = { id: string; name: string };
   type CandidateItem = VoteCandidate | LegacyCandidate;
 
-  const candidates: CandidateItem[] = isLeader ? (leaderQuery.data?.result ?? []) : (demodayQuery.data?.result ?? []);
+  const candidates: CandidateItem[] = isLeader ? leaderQuery.data?.result ?? [] : demodayQuery.data?.result ?? [];
   const isError = isLeader ? !!leaderQuery.error : !!demodayQuery.error;
 
   // 유효하지 않은 카테고리인 경우
@@ -70,13 +67,20 @@ export default function VotingPage() {
   const handleSubmitVote = () => {
     if (!selectedId) return;
 
-    const selectedCandidate = candidates.find((c: CandidateItem) => ('candidateId' in c ? c.candidateId === selectedId : Number(c.id) === selectedId));
+    const selectedCandidate = candidates.find((c: CandidateItem) =>
+      'candidateId' in c ? c.candidateId === selectedId : Number(c.id) === selectedId,
+    );
     if (!selectedCandidate) return;
 
     const payload = { candidateId: selectedId };
 
     const onSuccess = () => {
-      const selectedName = 'candidateName' in selectedCandidate ? selectedCandidate.candidateName : 'name' in selectedCandidate ? selectedCandidate.name : '';
+      const selectedName =
+        'candidateName' in selectedCandidate
+          ? selectedCandidate.candidateName
+          : 'name' in selectedCandidate
+          ? selectedCandidate.name
+          : '';
       submitVote(category, selectedId, selectedName);
       router.push(`/voting/${category}/result`);
     };
@@ -105,7 +109,7 @@ export default function VotingPage() {
   return (
     <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">
       <div className="w-full max-w-4xl py-12">
-      <div className="bg-white border border-gray-400 rounded-2xl shadow-lg p-8">
+        <div className="bg-white border border-gray-400 rounded-2xl shadow-lg p-8">
           {/* 뒤로가기 버튼 */}
           <div className="mb-6">
             <BackButton href="/voting" />
@@ -127,27 +131,27 @@ export default function VotingPage() {
               {category === 'demo-day' ? '프로젝트 선택' : '멤버 선택'}
             </h3>
 
-              {/* 후보자/프로젝트 버튼 그리드 */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {isError ? (
-                  <div>데이터를 불러오지 못했습니다.</div>
-                ) : (
-                  candidates.length > 0 &&
-                  candidates.map((candidate: CandidateItem) => {
-                    const key = 'candidateId' in candidate ? candidate.candidateId : candidate.id;
-                    const name = 'candidateName' in candidate ? candidate.candidateName : candidate.name;
-                    const idNumber = 'candidateId' in candidate ? candidate.candidateId : Number(candidate.id);
-                    return (
-                      <VoteButton
-                        key={key}
-                        name={name}
-                        isSelected={selectedId === idNumber}
-                        onClick={() => handleSelect(idNumber)}
-                      />
-                    );
-                  })
-                )}
-              </div>
+            {/* 후보자/프로젝트 버튼 그리드 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {isError ? (
+                <div>데이터를 불러오지 못했습니다.</div>
+              ) : (
+                candidates.length > 0 &&
+                candidates.map((candidate: CandidateItem) => {
+                  const key = 'candidateId' in candidate ? candidate.candidateId : candidate.id;
+                  const name = 'candidateName' in candidate ? candidate.candidateName : candidate.name;
+                  const idNumber = 'candidateId' in candidate ? candidate.candidateId : Number(candidate.id);
+                  return (
+                    <VoteButton
+                      key={key}
+                      name={name}
+                      isSelected={selectedId === idNumber}
+                      onClick={() => handleSelect(idNumber)}
+                    />
+                  );
+                })
+              )}
+            </div>
           </div>
 
           {/* 투표하기 버튼 */}
