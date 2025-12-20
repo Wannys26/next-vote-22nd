@@ -9,10 +9,10 @@ interface CategoryCardProps {
 export default function CategoryCard({ category }: CategoryCardProps) {
   return (
     <Link href={`/voting/${category.id}`}>
-      <div className="bg-white border border-gray-400 rounded-[16px] p-8 hover:shadow-lg transition-all cursor-pointer h-full flex flex-col">
+      <div className="bg-white border border-gray-400 rounded-2xl p-8 hover:shadow-lg transition-all cursor-pointer h-full flex flex-col">
         {/* 아이콘 */}
         <div
-          className="w-24 h-24 rounded-[16px] flex items-center justify-center mb-6 mx-auto"
+          className="w-24 h-24 rounded-2xl flex items-center justify-center mb-6 mx-auto"
           style={{
             background:
               category.id === 'demo-day'

@@ -1,10 +1,12 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 import { useLoginGuard } from '@/hooks/useAuthGuard';
 import { usePartGuard } from '@/hooks/usePartGuard';
-import { getVoteResult, categoryData, type VoteCategory } from '@/constants/voteData';
+import { categoryData, type VoteCategory } from '@/constants/voteData';
 import ResultBar from '@/components/vote/ResultBar';
+import { useFetchLeaderResultQuery, useFetchDemodayResultQuery } from '@/hooks/vote/useVote';
 
 export default function VotingResultPage() {
   useLoginGuard();
@@ -14,16 +16,69 @@ export default function VotingResultPage() {
 
   usePartGuard(category);
 
-  // 카테고리 정보와 결과 데이터 가져오기
   const categoryInfo = categoryData[category];
-  const voteResult = getVoteResult(category);
+
+  const isLeader = category === 'fe-leader' || category === 'be-leader';
+  const leaderResultQuery = useFetchLeaderResultQuery({ enabled: isLeader });
+  const demodayResultQuery = useFetchDemodayResultQuery({ enabled: category === 'demo-day' });
+
+  const apiResult = isLeader ? leaderResultQuery.data?.result : demodayResultQuery.data?.result;
+  const isPending = isLeader ? leaderResultQuery.isPending : demodayResultQuery.isPending;
+  const isError = isLeader ? !!leaderResultQuery.error : !!demodayResultQuery.error;
+
+  const voteResult = useMemo(() => {
+    if (!apiResult) return null;
+
+    const list = (apiResult.candidateList ?? [])
+      .slice()
+      .sort((a, b) => b.voteCount - a.voteCount)
+      .map((item, idx) => ({
+        rank: idx + 1,
+        name: item.candidateName,
+        votes: item.voteCount,
+        emoji: idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '',
+      }));
+
+    return {
+      results: list,
+      totalVotes: apiResult.totalVoteCount ?? list.reduce((s, r) => s + r.votes, 0),
+    };
+  }, [apiResult]);
 
   // 유효하지 않은 카테고리인 경우
-  if (!categoryInfo || !voteResult) {
+  if (!categoryInfo) {
     return (
       <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">
         <div className="text-center">
           <h1 className="text-head-2-bold text-black mb-4">잘못된 접근입니다</h1>
+          <button
+            onClick={() => router.push('/voting')}
+            className="cursor-pointer bg-blue-600 text-white px-6 py-3 rounded-[14px] text-body-1-semibold hover:bg-blue-500"
+          >
+            카테고리 선택으로 돌아가기
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  // 로딩 중
+  if (isPending) {
+    return (
+      <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">
+        <div className="text-center">
+          <h1 className="text-head-2-bold text-black mb-4">투표 결과를 불러오는 중...</h1>
+        </div>
+      </main>
+    );
+  }
+
+  // 데이터 로딩 실패 또는 결과가 없는 경우
+  if (isError || !voteResult) {
+    return (
+      <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">
+        <div className="text-center">
+          <h1 className="text-head-2-bold text-black mb-4">데이터를 불러오지 못했습니다.</h1>
           <button
             onClick={() => router.push('/voting')}
             className="bg-blue-600 text-white px-6 py-3 rounded-[14px] text-body-1-semibold hover:bg-blue-500"
@@ -35,7 +90,7 @@ export default function VotingResultPage() {
     );
   }
 
-  const maxVotes = Math.max(...voteResult.results.map((r) => r.votes));
+  const maxVotes = voteResult.results.length ? Math.max(...voteResult.results.map((r) => r.votes)) : 0;
 
   return (
     <main className="min-h-screen gradient-radial flex items-center justify-center px-4 pt-20">
@@ -47,7 +102,7 @@ export default function VotingResultPage() {
         </div>
 
         {/* 결과 컨테이너 */}
-        <div className="bg-white border border-gray-400 rounded-[16px] shadow-lg p-8 flex flex-col gap-6">
+        <div className="bg-white border border-gray-400 rounded-2xl shadow-lg p-8 flex flex-col gap-6">
           {/* 카테고리 제목 */}
           <div className="border-b border-gray-400 pb-4">
             <h2 className="text-head-4-bold text-black text-center">{categoryInfo.title}</h2>
